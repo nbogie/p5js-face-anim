@@ -19,7 +19,6 @@ var gDim = 100;
 
 var gMySound;
 
-
 function preload() {
   gMySound = loadSound(
     "https://www.freesound.org/data/previews/51/51130_179538-lq.mp3"
@@ -325,22 +324,26 @@ function drawMmm() {
   );
 }
 
-
 function drawReactiveIdle() {
-
-  if (! gFly.isActive) {
+  if (!gFly.isActive) {
     drawSmile();
-  } else {    
+  } else {
     drawBasicFace();
     fill("#333333");
-    var r = map(dist(gFly.pos.x, gFly.pos.y, gMouthPos.x, gMouthPos.y), max(width, height), 0, gDim / 100, gDim / 30);
-    ellipse(gMouthPos.x, gMouthPos.y,r, r);
+    var r = map(
+      dist(gFly.pos.x, gFly.pos.y, gMouthPos.x, gMouthPos.y),
+      max(width, height),
+      0,
+      gDim / 100,
+      gDim / 30
+    );
+    ellipse(gMouthPos.x, gMouthPos.y, r, r);
   }
 }
 
 function drawSmile() {
   drawBasicFace();
-      noFill();
+  noFill();
   strokeWeight(gDim / 100);
 
   stroke("#333333");
@@ -454,7 +457,7 @@ function setAnim(anim) {
 }
 
 function boom() {
-  say("boom");
+  say("boom ('b')");
   gMySound.play(0, 1, 0.5, 0, 0.38);
 
   setAnim(gAnims.boom);
@@ -471,13 +474,13 @@ function bip() {
 }
 
 function kah() {
-  say("kah");
+  say("kah ('k')");
   gMySound.play(0, 1, 0.5, 0.75, 0.4);
   setAnim(gAnims.kah);
 }
 
 function tss() {
-  say("tss");
+  say("tss ('t')");
   gMySound.play(0, 1, 0.5, 0.38, 0.2);
 
   setAnim(gAnims.tss);
@@ -496,15 +499,12 @@ function keyPressed() {
       break;
     case "C":
       gCurrentAnim.advance();
-      gFly.reset();
       break;
     case "R":
       idle();
       break;
     case "T":
       tss();
-      break;
-    case "X":
       break;
     default:
   }
