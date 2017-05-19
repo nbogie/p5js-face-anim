@@ -1,23 +1,24 @@
 "use strict";
 
-//TODO: credit the sound clip (or record and upload my own) https://www.freesound.org/people/RutgerMuller/sounds/51130/
-///TODO: if we're interested in the fly, make an 'oo' with the mouth
-// TODO: have an alternate silent anim with an eyebrow shrug, to punctuate silence in beat.
+///TODO: if smiley is interested in the butterfly, make an 'oo' with the mouth
 //TODO: analyse the speech as it is output, and use the fft or waveform to render the butterfly's wings, or have the history of the waveform or fft be visible on the air and have the butterfly treat it as turbulence / thermal.
+// TODO: have an alternate silent anim with an eyebrow shrug, to punctuate silence in beat.
+//TODO: credit the sound clip (or record and upload my own) https://www.freesound.org/people/RutgerMuller/sounds/51130/
 
-
-var gDim = 100;
+var gFly;
+var gLastActivity;
 var gHistory = [];
 var gCurrentAnim;
 var gAnims;
-var gMouthPos = {};
+
 var gBeatIx = 0;
 var gBeat = [];
 
+var gMouthPos = {};
+var gDim = 100;
+
 var gMySound;
 
-var gLastActivity;
-var gFly;
 
 function preload() {
   gMySound = loadSound(
