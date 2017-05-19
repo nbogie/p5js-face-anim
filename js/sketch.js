@@ -33,19 +33,12 @@ function Vec(x, y) {
 function randomPos() {
   return new Vec(random(0, width), random(0, height));
 }
-
 function Fly() {
   this.changeColors = function() {
     colorMode(HSB);
-    var sat = 100;
-    var alpha = 1;
-    this.color1 = color(191, sat, 100, alpha);
-    (this.colorInner = color("#FFD864")), (this.colorBody = color( //color(70, sat, 100, alpha);
-      random(0, 360),
-      sat,
-      20,
-      alpha
-    ));
+    this.color1 = gPalette.wingsOuter,
+    this.colorInner = gPalette.wingsInner,
+    this.colorBody = gPalette.butterflyBody;
   };
   this.reset = function() {
     this.isActive = true;
@@ -187,17 +180,55 @@ function windowResized() {
 }
 
 function createPalette() {
+  var ix = random([0,1]);
+  colorMode(HSB);
+
+  var paletteHeadache = {
+    face: color("#E6AC27"),
+    background: color("#655643"),
+    eyeWhites: color('#F6F7BD'),
+    teethWhite: color("#F6F7BD"),
+    wingsOuter: color('#80BCA3'),
+    wingsInner: color('#BF4D28'),
+    butterflyBody: color(0,100,20,1),
+    tongue: color('#BF4D28'),
+    text: color('#80BCA3'),
+    url: 'http://www.colourlovers.com/palette/953498/Headache'
+  };
+  
+  var white = color('white');
+  var paletteHappy = {
+    face: color("#F7A541"),
+    background: color("#A1DBB2"),
+    eyeWhites: color('#FEE5AD'),
+    teethWhite: color("#FEE5AD"),
+    tongue: color('#F45D4C'),
+    wingsOuter: color('#FACA66'),
+    wingsInner: color('#FEE5AD'),
+    text: color('#80BCA3'),
+    url: 'http://www.colourlovers.com/palette/953498/Headache'
+    //#A1DBB2,#FEE5AD,#FACA66,#F7A541,#F45D4C,#A1DBB2,#FEE5AD,#FACA66
+  }
+
   gPalette = {
     face: color("#FFC10E"),
     mouthBlack: color("#333333"),
     eyeWhites: color(255),
-    background: color("#4ba6bd")
+    background: color("#4ba6bd"), 
+    tongue: color('red'),
+    wingsOuter: color(191, 100, 100, 1),
+    wingsInner: color("#FFD864"), 
+    butterflyBody: color('#333333'),
+    teethWhite: color("white"),
+    text: color( 'white')
   };
+  var p = random([gPalette, paletteHappy, paletteHeadache])
+  gPalette = Object.assign(gPalette, p);
 }
 
-function setup() {
+//separate from setup() so that we can start multiple times without reload.
+function restart() {
   createPalette();
-  createCanvas(windowWidth, windowHeight);
   gMySound.setVolume(0.3);
   gLastActivity = millis();
   gFly = new Fly();
@@ -213,7 +244,8 @@ function setup() {
     [boom, tss, kah, boom, idle, boom, kah, idle]
   ];
   gBeat = random(allBeats);
-
+  gBeatIx = 0;
+  
   ellipseMode(RADIUS);
   rectMode(RADIUS);
 
@@ -243,6 +275,11 @@ function setup() {
   };
   setAnim(gAnims.idle);
 
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  restart();
   loop();
 }
 
@@ -379,7 +416,7 @@ function drawTss() {
   drawBasicFace();
   fill(gPalette.mouthBlack);
   arc(gMouthPos.x, gMouthPos.y - 0.015 * gDim, gDim / 35, gDim / 35, 0, PI);
-  fill("white");
+  fill(gPalette.teethWhite);
   rect(gMouthPos.x, gMouthPos.y - 0.0090 * gDim, gDim / 80, gDim / 180);
   rect(gMouthPos.x, gMouthPos.y + 0.005 * gDim, gDim / 80, gDim / 160);
 }
@@ -387,9 +424,9 @@ function drawTss() {
 function drawIh() {
   drawBasicFace();
   fill(gPalette.mouthBlack);
-  arc(gMouthPos.x, gMouthPos.y - 0.01 * gDim, gDim / 35, gDim / 35, 0, PI);
-  fill("red");
-  arc(gMouthPos.x, gMouthPos.y + 0.015 * gDim, gDim / 100, gDim / 240, PI, 0);
+  arc(gMouthPos.x, gMouthPos.y - 0.014 * gDim, gDim / 35, gDim / 35, 0, PI);
+  fill(gPalette.tongue);
+  arc(gMouthPos.x, gMouthPos.y + 0.011 * gDim, gDim / 100, gDim / 240, PI, 0);
 }
 
 function drawP() {
@@ -425,7 +462,7 @@ function drawOoh() {
 }
 
 function drawDebugInfo() {
-  fill(255);
+  fill(gPalette.text);
   textSize(20);
   noStroke();
   text("debugstep: " + gCurrentAnim.debugStep, 100, 200);
@@ -434,12 +471,12 @@ function drawDebugInfo() {
 
 function drawWords() {
   noStroke();
-  fill(255);
+  fill(gPalette.text);
   var words = gHistory.slice(-4).reverse();
   var first = true;
   var i = 0;
   words.forEach(function(w) {
-    fill(255, map(i, 0, words.length - 1, 255, 30));
+//    fill(255, map(i, 0, words.length - 1, 255, 30));
     if (first) {
       textSize(30);
       first = false;
@@ -520,7 +557,7 @@ function keyPressed() {
       kah();
       break;
     case "C":
-      gCurrentAnim.advance();
+      restart();
       break;
     case "R":
       idle();
