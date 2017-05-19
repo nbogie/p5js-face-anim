@@ -1,10 +1,10 @@
 "use strict";
-
-///TODO: if smiley is interested in the butterfly, make an 'oo' with the mouth
 //TODO: analyse the speech as it is output, and use the fft or waveform to render the butterfly's wings, or have the history of the waveform or fft be visible on the air and have the butterfly treat it as turbulence / thermal.
+//TODO: have multiple samples for each sound, and pick random (or cycle) to make more human.
 // TODO: have an alternate silent anim with an eyebrow shrug, to punctuate silence in beat.
 //TODO: credit the sound clip (or record and upload my own) https://www.freesound.org/people/RutgerMuller/sounds/51130/
 //TOO: do simple sound synthesis of the smiley's "ooh" when the butterfly comes close (low-pass filter for the wah, and pitch, both modded with the mouth radius)
+///TODO: if smiley is interested in the butterfly, make an 'oo' with the mouth
 var gFly;
 var gLastActivity;
 var gHistory = [];
