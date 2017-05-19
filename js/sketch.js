@@ -4,12 +4,13 @@
 //TODO: analyse the speech as it is output, and use the fft or waveform to render the butterfly's wings, or have the history of the waveform or fft be visible on the air and have the butterfly treat it as turbulence / thermal.
 // TODO: have an alternate silent anim with an eyebrow shrug, to punctuate silence in beat.
 //TODO: credit the sound clip (or record and upload my own) https://www.freesound.org/people/RutgerMuller/sounds/51130/
-
+//TOO: do simple sound synthesis of the smiley's "ooh" when the butterfly comes close (low-pass filter for the wah, and pitch, both modded with the mouth radius)
 var gFly;
 var gLastActivity;
 var gHistory = [];
 var gCurrentAnim;
 var gAnims;
+var gPalette;
 
 var gBeatIx = 0;
 var gBeat = [];
@@ -37,9 +38,14 @@ function Fly() {
   this.changeColors = function() {
     colorMode(HSB);
     var sat = 100;
-    this.color1 = color(191, sat, 100, 0.5);
-    this.colorInner = color(70, sat, 100, 0.5);
-    this.colorBody = color(random(0, 360), sat, 20, 0.5);
+    var alpha = 1;
+    this.color1 = color(191, sat, 100, alpha);
+    (this.colorInner = color("#FFD864")), (this.colorBody = color( //color(70, sat, 100, alpha);
+      random(0, 360),
+      sat,
+      20,
+      alpha
+    ));
   };
   this.reset = function() {
     this.isActive = true;
@@ -180,7 +186,17 @@ function windowResized() {
   setFaceSize();
 }
 
+function createPalette() {
+  gPalette = {
+    face: color("#FFC10E"),
+    mouthBlack: color("#333333"),
+    eyeWhites: color(255),
+    background: color("#4ba6bd")
+  };
+}
+
 function setup() {
+  createPalette();
   createCanvas(windowWidth, windowHeight);
   gMySound.setVolume(0.3);
   gLastActivity = millis();
@@ -265,26 +281,26 @@ function Eye(x, y) {
 
   this.draw = function() {
     if (this.whiteEyes) {
-      fill("white");
+      fill(gPalette.eyeWhites);
     } else {
-      fill("#FFC10E");
-      stroke("#333333");
+      fill(gPalette.face);
+      stroke(gPalette.mouthBlack);
       strokeWeight(gDim / 130);
     }
     ellipse(this.x, this.y, gDim / 30);
-    fill("#333333");
+    fill(gPalette.mouthBlack);
     var off = this.offset();
     ellipse(this.x + off.x, this.y + off.y, gDim / 60);
     //eyelids???
     if (false) {
-      fill("#FDBE0C");
+      fill(gPalette.face);
       arc(this.x, this.y - gDim / 45, gDim / 30, gDim / 30, PI, 0);
     }
   };
 }
 
 function draw() {
-  background("#4ba6bd");
+  background(gPalette.background);
 
   gCurrentAnim.display();
   if (millis() - gCurrentAnim.finishesAt > 2000) {
@@ -301,7 +317,7 @@ function draw() {
 function drawBasicFace() {
   noStroke();
   //FACE CIRCLE
-  fill("#FFC10E");
+  fill(gPalette.face);
   ellipse(width / 2, height / 2, min(width, height) / 2);
 
   var eyeL = new Eye(width / 2 - gDim / 20, height / 2 - gDim / 30);
@@ -323,19 +339,21 @@ function drawMmm() {
     gMouthPos.y
   );
 }
-
+function clampedMap(inp, inLo, inHi, outA, outB) {
+  return map(constrain(inp, inLo, inHi), inLo, inHi, outA, outB);
+}
 function drawReactiveIdle() {
   if (!gFly.isActive) {
     drawSmile();
   } else {
     drawBasicFace();
-    fill("#333333");
-    var r = map(
+    fill(gPalette.mouthBlack);
+    var r = clampedMap(
       dist(gFly.pos.x, gFly.pos.y, gMouthPos.x, gMouthPos.y),
-      max(width, height),
       0,
-      gDim / 100,
-      gDim / 30
+      min(width, height),
+      gDim / 30,
+      gDim / 120
     );
     ellipse(gMouthPos.x, gMouthPos.y, r, r);
   }
@@ -359,7 +377,7 @@ function drawSmile() {
 
 function drawTss() {
   drawBasicFace();
-  fill("#333333");
+  fill(gPalette.mouthBlack);
   arc(gMouthPos.x, gMouthPos.y - 0.015 * gDim, gDim / 35, gDim / 35, 0, PI);
   fill("white");
   rect(gMouthPos.x, gMouthPos.y - 0.0090 * gDim, gDim / 80, gDim / 180);
@@ -368,7 +386,7 @@ function drawTss() {
 
 function drawIh() {
   drawBasicFace();
-  fill("#333333");
+  fill(gPalette.mouthBlack);
   arc(gMouthPos.x, gMouthPos.y - 0.01 * gDim, gDim / 35, gDim / 35, 0, PI);
   fill("red");
   arc(gMouthPos.x, gMouthPos.y + 0.015 * gDim, gDim / 100, gDim / 240, PI, 0);
@@ -376,7 +394,7 @@ function drawIh() {
 
 function drawP() {
   drawBasicFace();
-  stroke("#333333");
+  stroke(gPalette.mouthBlack);
 
   strokeWeight(gDim / 100);
   line(
@@ -402,7 +420,7 @@ function drawB() {
 
 function drawOoh() {
   drawBasicFace();
-  fill("#333333");
+  fill(gPalette.mouthBlack);
   ellipse(gMouthPos.x, gMouthPos.y, gDim / 80, gDim / 80);
 }
 
@@ -433,11 +451,15 @@ function drawWords() {
   });
 }
 
-function mousePressed() {
-  gLastActivity = millis();
+function playNextInBeat() {
   gBeat[gBeatIx]();
   gBeatIx = (gBeatIx + 1) % gBeat.length;
 }
+function mousePressed() {
+  gLastActivity = millis();
+  playNextInBeat();
+}
+
 function mouseMoved() {
   gLastActivity = millis();
 }
@@ -505,6 +527,9 @@ function keyPressed() {
       break;
     case "T":
       tss();
+      break;
+    case " ":
+      playNextInBeat();
       break;
     default:
   }
