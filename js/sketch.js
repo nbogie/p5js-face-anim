@@ -1,4 +1,5 @@
 "use strict";
+//TODO: add another set of samples.  e.g. female, or child.
 //TODO: analyse the speech as it is output, and use the fft or waveform to render the butterfly's wings, or have the history of the waveform or fft be visible on the air and have the butterfly treat it as turbulence / thermal.
 //TODO: have multiple samples for each sound, and pick random (or cycle) to make more human.
 // TODO: have an alternate silent anim with an eyebrow shrug, to punctuate silence in beat.
@@ -19,11 +20,37 @@ var gMouthPos = {};
 var gDim = 100;
 
 var gMySound;
+var soundURL;
+
+var gSoundSet;
 
 function preload() {
-  gMySound = loadSound(
-    "https://www.freesound.org/data/previews/51/51130_179538-lq.mp3"
-  );
+  //http://www.freesound.org/people/neillzero/sounds/393894/
+  var soundSets = [
+    {
+      name: "chipmunk",
+      url: "https://www.freesound.org/data/previews/393/393894_3665055-lq.mp3",
+      timings: {
+        boom: [[0.123, 0.392], [0.855, 0.38], [1.484, 0.335]],
+        tss: [[5.576, 0.19], [6.255, 0.165], [6.902, 0.161]],
+        bip: [[2.72, 0.244], [3.414, 0.3], [4.144, 0.28]]
+      }
+    },
+    {
+      name: "original",
+      url: "https://www.freesound.org/data/previews/51/51130_179538-lq.mp3",
+      timings: {
+        boom: [[1.58, 0.369], [0, 0.38]],
+        tss: [[1.93, 0.132], [0.38, 0.2]],
+        kah: [[0.75, 0.4], [2.40, 0.344]]
+      }
+    }
+  ];
+
+  gSoundSet = random(soundSets);
+  //gSoundSet = soundSets[1];
+
+  gMySound = loadSound(gSoundSet.url);
 }
 
 function Vec(x, y) {
@@ -36,8 +63,8 @@ function randomPos() {
 function Fly() {
   this.changeColors = function() {
     colorMode(HSB);
-    this.color1 = gPalette.wingsOuter,
-    this.colorInner = gPalette.wingsInner,
+    this.color1 = gPalette.wingsOuter;
+    this.colorInner = gPalette.wingsInner;
     this.colorBody = gPalette.butterflyBody;
   };
   this.reset = function() {
@@ -180,49 +207,49 @@ function windowResized() {
 }
 
 function createPalette() {
-  var ix = random([0,1]);
+  var ix = random([0, 1]);
   colorMode(HSB);
 
   var paletteHeadache = {
     face: color("#E6AC27"),
     background: color("#655643"),
-    eyeWhites: color('#F6F7BD'),
+    eyeWhites: color("#F6F7BD"),
     teethWhite: color("#F6F7BD"),
-    wingsOuter: color('#80BCA3'),
-    wingsInner: color('#BF4D28'),
-    butterflyBody: color(0,100,20,1),
-    tongue: color('#BF4D28'),
-    text: color('#80BCA3'),
-    url: 'http://www.colourlovers.com/palette/953498/Headache'
+    wingsOuter: color("#80BCA3"),
+    wingsInner: color("#BF4D28"),
+    butterflyBody: color(0, 100, 20, 1),
+    tongue: color("#BF4D28"),
+    text: color("#80BCA3"),
+    url: "http://www.colourlovers.com/palette/953498/Headache"
   };
-  
-  var white = color('white');
+
+  var white = color("white");
   var paletteHappy = {
     face: color("#F7A541"),
     background: color("#A1DBB2"),
-    eyeWhites: color('#FEE5AD'),
+    eyeWhites: color("#FEE5AD"),
     teethWhite: color("#FEE5AD"),
-    tongue: color('#F45D4C'),
-    wingsOuter: color('#FACA66'),
-    wingsInner: color('#FEE5AD'),
-    text: color('#80BCA3'),
-    url: 'http://www.colourlovers.com/palette/953498/Headache'
+    tongue: color("#F45D4C"),
+    wingsOuter: color("#FACA66"),
+    wingsInner: color("#FEE5AD"),
+    text: color("#80BCA3"),
+    url: "http://www.colourlovers.com/palette/953498/Headache"
     //#A1DBB2,#FEE5AD,#FACA66,#F7A541,#F45D4C,#A1DBB2,#FEE5AD,#FACA66
-  }
+  };
 
   gPalette = {
     face: color("#FFC10E"),
     mouthBlack: color("#333333"),
     eyeWhites: color(255),
-    background: color("#4ba6bd"), 
-    tongue: color('red'),
+    background: color("#4ba6bd"),
+    tongue: color("red"),
     wingsOuter: color(191, 100, 100, 1),
-    wingsInner: color("#FFD864"), 
-    butterflyBody: color('#333333'),
+    wingsInner: color("#FFD864"),
+    butterflyBody: color("#333333"),
     teethWhite: color("white"),
-    text: color( 'white')
+    text: color("white")
   };
-  var p = random([gPalette, paletteHappy, paletteHeadache])
+  var p = random([gPalette, paletteHappy, paletteHeadache]);
   gPalette = Object.assign(gPalette, p);
 }
 
@@ -239,13 +266,16 @@ function restart() {
 
   setFaceSize();
 
-  var allBeats = [
-    [boom, tss, kah, tss, boom, boom, kah, tss],
-    [boom, tss, kah, boom, idle, boom, kah, idle]
-  ];
-  gBeat = random(allBeats);
+  var allBeats = {
+    original: [
+      [boom, tss, kah, tss, boom, boom, kah, tss],
+      [boom, tss, kah, boom, idle, boom, kah, idle]
+    ],
+    chipmunk: [[boom, tss, bip, tss, tss, boom, bip, tss]]
+  };
+  gBeat = random(allBeats[gSoundSet.name]);
   gBeatIx = 0;
-  
+
   ellipseMode(RADIUS);
   rectMode(RADIUS);
 
@@ -274,7 +304,6 @@ function restart() {
     idle: new Anim({ frames: [drawReactiveIdle], times: [0] })
   };
   setAnim(gAnims.idle);
-
 }
 
 function setup() {
@@ -476,7 +505,7 @@ function drawWords() {
   var first = true;
   var i = 0;
   words.forEach(function(w) {
-//    fill(255, map(i, 0, words.length - 1, 255, 30));
+    //    fill(255, map(i, 0, words.length - 1, 255, 30));
     if (first) {
       textSize(30);
       first = false;
@@ -515,34 +544,44 @@ function setAnim(anim) {
   }
 }
 
+function playSnippet(name) {
+
+  var timings = gSoundSet.timings[name];
+  if (timings) {    
+    var timing = random(timings);
+    //play([startTime],[rate],[amp],[cueStart],[duration])
+    gMySound.play(0, 1, 0.5, timing[0], timing[1]);
+  }
+}
+
 function boom() {
   say("boom ('b')");
-  gMySound.play(0, 1, 0.5, 0, 0.38);
-
+  playSnippet("boom");
   setAnim(gAnims.boom);
 }
 
-function idle() {
-  say("...");
-  setAnim(gAnims.idle);
-}
-
 function bip() {
-  say("bip");
-  setAnim(gAnims.bip);
+  say("bip ('i')");
+  var label = "bip";
+  playSnippet(label);
+  setAnim(gAnims[label]);
 }
 
 function kah() {
   say("kah ('k')");
-  gMySound.play(0, 1, 0.5, 0.75, 0.4);
+  playSnippet("kah");
   setAnim(gAnims.kah);
 }
 
 function tss() {
   say("tss ('t')");
-  gMySound.play(0, 1, 0.5, 0.38, 0.2);
-
+  playSnippet("tss");
   setAnim(gAnims.tss);
+}
+
+function idle() {
+  say("...");
+  setAnim(gAnims.idle);
 }
 
 function keyPressed() {
